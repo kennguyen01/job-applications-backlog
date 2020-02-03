@@ -9,7 +9,7 @@ class UserInputs:
     def __init__(self):
         """
         states: list of all US states abbreviations
-        jobs: list of job titles
+        jobs: list of job jobs
         locations: dict of each state mapped to its cities
         exp: specified experience level, None will include all jobs
         """
@@ -45,26 +45,26 @@ class UserInputs:
             value = value.strip().replace(" ", "+")
         return value
 
-    def input_titles(self):
-        """Get user inputs for job titles and append to jobs list"""
-        titles = input("Enter all job titles: ")
+    def input_jobs(self):
+        """Get user inputs for job jobs and append to jobs list"""
+        jobs = input("Enter all job jobs: ")
         
-        if not titles:
+        if not jobs:
             return
 
-        # One title
-        if "," not in titles:
-            titles = self._clean_input(titles)
-            titles = self._process_string(titles)
-            self.jobs.append(titles)
+        # One job
+        if "," not in jobs:
+            jobs = self._clean_input(jobs)
+            jobs = self._process_string(jobs)
+            self.jobs.append(jobs)
             
-        # Multiple titles
+        # Multiple jobs
         else:
-            titles = titles.split(",")
-            for title in titles:
-                title = self._clean_input(title)
-                title = self._process_string(title)
-                self.jobs.append(title)
+            jobs = jobs.split(",")
+            for job in jobs:
+                job = self._clean_input(job)
+                job = self._process_string(job)
+                self.jobs.append(job)
 
     def input_states(self):
         """Get user inputs for all states"""

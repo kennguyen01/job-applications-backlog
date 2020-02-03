@@ -5,7 +5,7 @@ from unittest import TestCase
 from inputs import UserInputs
 
 
-class TestInputTitles(TestCase):
+class TestInputJobs(TestCase):
     
     def setUp(self):
         self.inputs = UserInputs()
@@ -14,43 +14,43 @@ class TestInputTitles(TestCase):
         del self.inputs
 
     @patch("builtins.input", return_value="")
-    def test_no_title(self, mock_input):
-        self.inputs.input_titles()
+    def test_no_job(self, mock_input):
+        self.inputs.input_jobs()
         test = []
         result = self.inputs.get_jobs()
         self.assertEqual(test, result)
 
     @patch("builtins.input", return_value="developer")
-    def test_one_word_title(self, mock_input):
-        self.inputs.input_titles()
+    def test_one_word_job(self, mock_input):
+        self.inputs.input_jobs()
         test = ["developer"]
         result = self.inputs.get_jobs()
         self.assertEqual(test, result)
 
     @patch("builtins.input", return_value="junior developer")
-    def test_multiple_words_title(self, mock_input):
-        self.inputs.input_titles()
+    def test_multiple_words_job(self, mock_input):
+        self.inputs.input_jobs()
         test = ["junior+developer"]
         result = self.inputs.get_jobs()
         self.assertEqual(test, result)
 
     @patch("builtins.input", return_value="developer, programmer, engineer")
-    def test_multiple_title(self, mock_input):
-        self.inputs.input_titles()
+    def test_multiple_job(self, mock_input):
+        self.inputs.input_jobs()
         test = ["developer", "programmer", "engineer"]
         result = self.inputs.get_jobs()
         self.assertEqual(test, result)
 
     @patch("builtins.input", return_value="java developer, java engineer")
-    def test_multipe_words_and_titles(self, mock_input):
-        self.inputs.input_titles()
+    def test_multipe_words_and_jobs(self, mock_input):
+        self.inputs.input_jobs()
         test = ["java+developer", "java+engineer"]
         result = self.inputs.get_jobs()
         self.assertEqual(test, result)
 
     @patch("builtins.input", return_value="!#^%@%eng@%i%ne(_)(er")
-    def test_invalid_title(self, mock_input):
-        self.inputs.input_titles()
+    def test_invalid_job(self, mock_input):
+        self.inputs.input_jobs()
         test = ["engineer"]
         result = self.inputs.get_jobs()
         self.assertEqual(test, result)
@@ -118,7 +118,7 @@ class TestInputCities(TestCase):
         self.assertEqual(test, result)
 
     @patch("builtins.input", side_effect=["ca", "los angeles, san francisco"])
-    def test_multiple_city_one_state(self, mock_input):
+    def test_multiple_cities_one_state(self, mock_input):
         self.inputs.input_states()
         self.inputs.input_cities()
         test = {"CA": ["Los+Angeles", "San+Francisco"]}
