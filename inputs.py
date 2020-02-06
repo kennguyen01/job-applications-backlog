@@ -47,7 +47,7 @@ class UserInputs:
 
     def input_jobs(self):
         """Get user inputs for job jobs and append to jobs list"""
-        jobs = input("Enter all job jobs: ")
+        jobs = input("Enter all jobs: ")
         
         if not jobs:
             return
