@@ -33,20 +33,26 @@ class UserInputs:
 
     @staticmethod
     def _clean_input(value):
-        """Removes non-alpha symbols from input except space"""
+        """
+        Removes non-alpha symbols from input except space
+        """
         regex = re.compile("[^a-zA-Z ]")
         new_value = regex.sub("", value)
         return new_value
 
     @staticmethod
     def _process_string(value):
-        """Replace space with + for Indeed query"""
+        """
+        Replace space with + for Indeed query
+        """
         if " " in value:
             value = value.strip().replace(" ", "+")
         return value
 
     def input_jobs(self):
-        """Get user inputs for job jobs and append to jobs list"""
+        """
+        Get user inputs for job jobs and append to jobs list
+        """
         jobs = input("Enter all jobs: ")
         
         if not jobs:
@@ -67,7 +73,9 @@ class UserInputs:
                 self.jobs.append(job)
 
     def input_states(self):
-        """Get user inputs for all states"""
+        """
+        Get user inputs for all states
+        """
         states = input("Enter all states: ")
 
         if not states:
@@ -97,7 +105,9 @@ class UserInputs:
                 self.locations[state] = []
             
     def input_cities(self):
-        """Get user inputs for all cities in each state"""
+        """
+        Get user inputs for all cities in each state
+        """
         for state in self.locations:
             cities = input(f"Enter all cities in {state}: ")
 
@@ -123,8 +133,10 @@ class UserInputs:
                     self.locations[state].append(city)
 
     def input_exp(self):
-        """Get user input for desired experience level"""
-        exp = input("Enter experience level (entry/mid/senior): ")
+        """
+        Get user input for desired experience level
+        """
+        exp = input("Enter experience level (entry/mid/senior). Leave empty for all jobs: ")
         
         if not exp:
             return
