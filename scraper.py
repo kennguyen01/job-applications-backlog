@@ -33,6 +33,10 @@ class IndeedScraper:
         self.results = {}
         self.url = "https://www.indeed.com/"
 
+        # Counters for job numbers
+        self.city_jobs = 0
+        self.total_jobs = 0
+
     @staticmethod
     def _shorten_url(url):
         """
@@ -42,8 +46,7 @@ class IndeedScraper:
         with contextlib.closing(urlopen(request_url)) as response:
             return response.read().decode("utf-8")
 
-    @staticmethod
-    def _remove_duplicates():
+    def remove_duplicates(self):
         """
         Remove duplicates from all job postings and delete old CSV file
         """
@@ -54,6 +57,8 @@ class IndeedScraper:
                     continue
                 exist.add(job)
                 out_file.write(job)
+
+                self.total_jobs += 1
         os.remove("all-postings.csv")
 
     def write_csv(self, postings):
@@ -88,8 +93,7 @@ class IndeedScraper:
                 data.extend([title, company, location, salary, link])
                 data = [str(i) for i in data]
 
-                print(data)
-
+                print(f"+ {title} at {company}")
                 writer.writerow(data)
 
     def scrape(self):
@@ -101,41 +105,44 @@ class IndeedScraper:
 
         for job in self.jobs:
             for location in self.locations:
-                query = f"{self.url}jobs?q={job}&l={location}&limit=50&sort=date&start={start}"
+                # Counter for number of jobs in each city
+                while True:
+                    query = f"{self.url}jobs?q={job}&l={location}&limit=50&sort=date&start={start}"
 
-                # Add experience level to query if not None
-                if self.exp is not None:
-                    query += f"&explvl={self.exp}"
+                    # Add experience level to query if not None
+                    if self.exp is not None:
+                        query += f"&explvl={self.exp}"
 
-                page = requests.get(query)
-                soup = BeautifulSoup(page.content, "html.parser")
-                postings = soup.find_all("div", class_="jobsearch-SerpJobCard")
+                    page = requests.get(query)
+                    soup = BeautifulSoup(page.content, "html.parser")
+                    postings = soup.find_all("div", class_="jobsearch-SerpJobCard")
 
-                # Find total number of jobs on first request
-                if end == 0:
-                    total = soup.find("div", id="searchCountPages").text.strip()
+                    # Find total number of jobs on first request
+                    if end == 0:
+                        total = soup.find("div", id="searchCountPages").text.strip()
 
-                    # Example string of total jobs -> "Page 1 of 2,193 jobs"
-                    # Split the string, get 3rd element, and remove comma
-                    total = total.split()[3]
-                    if "," in total:
-                        total = total.replace(",", "")
-                    end = int(total)
+                        # Example string of total jobs -> "Page 1 of 2,193 jobs"
+                        # Split the string, get 3rd element, and remove comma
+                        total = total.split()[3]
+                        if "," in total:
+                            total = total.replace(",", "")
+                        end = int(total)
 
-                # Write job postings to CSV
-                self.write_csv(postings)
+                    # Write job postings to CSV
+                    self.write_csv(postings)
 
-                # If on last page, reset counters and go to next city, state
-                if end - start < 50:
-                    start = 0
-                    end = 0
-                    continue
-                # Otherwise, go to next page
-                else:
-                    start += 50
+                    # If on last page, reset counters and go to next city, state
+                    if end - start <= 50:
+                        start = 0
+                        end = 0
+                        break
+                    # Otherwise, go to next page
+                    else:
+                        start += 50
 
-                # Random delays
-                time.sleep(random.randint(1, 10))
+                    # Random delays
+                    time.sleep(random.randint(1, 10))
 
         # Write new file without duplicates
-        self._remove_duplicates()
+        self.remove_duplicates()
+        print(f"\nScraping complete. {self.total_jobs} jobs added.")
