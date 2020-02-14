@@ -66,7 +66,7 @@ class IndeedScraper:
         Write all job postings to CSV file
         """
         with open("all-postings.csv", "a") as csv_file:
-            header = ["Job Title", "Company", "Location", "Salary" "Link"]
+            header = ["Job Title", "Company", "Location", "Salary", "Link"]
             writer = csv.writer(csv_file, dialect="excel")
             writer.writerow(header)
 
