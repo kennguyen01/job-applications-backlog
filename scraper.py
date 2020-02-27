@@ -50,7 +50,7 @@ class IndeedScraper:
         """
         Remove duplicates from all job postings and delete old CSV file
         """
-        with open ("all-postings.csv", "r") as in_file, open("job-postings.csv", "w") as out_file:
+        with open ("all-postings.csv", "r", encoding="utf-8") as in_file, open("job-postings.csv", "w", encoding="utf-8") as out_file:
             exist = set()
             for job in in_file:
                 if job in exist:
