@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
 from __future__ import with_statement
-import csv
-import os
 import random
 import requests
-import sys
 import time
 from bs4 import BeautifulSoup
+from inputs import UserInputs
 import contextlib
 try:
     from urllib.parse import urlencode
@@ -17,7 +15,6 @@ try:
     from urllib.request import urlopen
 except ImportError:
     from urllib2 import urlopen
-from inputs import UserInputs
 
 
 class IndeedScraper:
@@ -30,12 +27,13 @@ class IndeedScraper:
             for city in cities:
                 self.locations.append(f"{city}&2C+{state}")
         self.exp = exp
-        self.results = {}
         self.url = "https://www.indeed.com/"
 
-        # Counters for job numbers
-        self.city_jobs = 0
-        self.total_jobs = 0
+        # Set containing strings of unique jobs
+        self.results = set()
+
+    def get_results(self):
+        return self.results
 
     @staticmethod
     def _shorten_url(url):
@@ -46,66 +44,44 @@ class IndeedScraper:
         with contextlib.closing(urlopen(request_url)) as response:
             return response.read().decode("utf-8")
 
-    def remove_duplicates(self):
-        """
-        Remove duplicates from all job postings and delete old CSV file
-        """
-        with open ("all-postings.csv", "r", encoding="utf-8") as in_file, open("job-postings.csv", "w", encoding="utf-8") as out_file:
-            exist = set()
-            for job in in_file:
-                if job in exist:
-                    continue
-                exist.add(job)
-                out_file.write(job)
+    def extract_data(self, postings):
+        """Extract useful data from raw HTML and add to results set"""
+        for posting in postings:
+            # <a> tag for job title and link
+            job = posting.find("a", class_="jobtitle")
+            title = job.attrs.get("title")
+            link = self._shorten_url(f"{self.url}{job.attrs.get('href')}")
 
-                self.total_jobs += 1
-        os.remove("all-postings.csv")
+            # Retrieves data value if item is not None
+            company = posting.find("span", class_="company")
+            if company is not None:
+                company = company.text.strip()
 
-    def write_csv(self, postings):
-        """
-        Write all job postings to CSV file
-        """
-        with open("all-postings.csv", "a", encoding="utf-8") as csv_file:
-            header = ["Job Title", "Company", "Location", "Salary", "Link", "Applied", "Interviewed", "Offered", "Rejected"]
-            writer = csv.writer(csv_file, dialect="excel")
-            writer.writerow(header)
+            location = posting.find("div", class_="recJobLoc")
+            if location is not None:
+                location = location.attrs.get("data-rc-loc")
 
-            for posting in postings:
-                data = []
+            salary = posting.find("span", class_="salaryText")
+            if salary is not None:
+                salary = salary.text.strip()
 
-                # <a> tag for job title and link
-                job = posting.find("a", class_="jobtitle")
-                title = job.attrs.get("title")
-                link = self._shorten_url(f"{self.url}{job.attrs.get('href')}")
+            # Convert items to str and add to tuple
+            data = (str(i) for i in(title, company, location, salary, link))
 
-                # Retrieves data value if item is not None
-                company = posting.find("span", class_="company")
-                if company is not None:
-                    company = company.text.strip()
-                location = posting.find("div", class_="recJobLoc")
-                if location is not None:
-                    location = location.attrs.get("data-rc-loc")
-                salary = posting.find("span", class_="salaryText")
-                if salary is not None:
-                    salary = salary.text.strip()
-
-                # Add all data to list and convert each item to str
-                data.extend([title, company, location, salary, link])
-                data = [str(i) for i in data]
-
-                print(f"+ {title} at {company}")
-                writer.writerow(data)
+            # Add tuple to set to prevent duplicates
+            if data in self.results:
+                continue
+            self.results.add(data)
+            
+            print(f"+ {title} at {company}")
 
     def scrape(self):
-        """
-        Scrape all job postings from inputs
-        """
+        """Scrape all job postings based on inputs"""
         start = 0
         end = 0
 
         for job in self.jobs:
             for location in self.locations:
-                # Counter for number of jobs in each city
                 while True:
                     query = f"{self.url}jobs?q={job}&l={location}&limit=50&sort=date&start={start}"
 
@@ -128,8 +104,7 @@ class IndeedScraper:
                             total = total.replace(",", "")
                         end = int(total)
 
-                    # Write job postings to CSV
-                    self.write_csv(postings)
+                    self.extract_data(postings)
 
                     # If on last page, reset counters and go to next city, state
                     if end - start <= 50:
@@ -143,6 +118,4 @@ class IndeedScraper:
                     # Random delays
                     time.sleep(random.randint(1, 10))
 
-        # Write new file without duplicates
-        self.remove_duplicates()
-        print(f"\nScraping complete. {self.total_jobs} jobs added.")
+        print(f"\nScraping complete.")
