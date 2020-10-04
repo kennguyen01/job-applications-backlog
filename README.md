@@ -1,4 +1,4 @@
-# Job Applications Backlog (JAB)
+# Job Applications Backlog
 
 Scrape Indeed job postings based on inputs and export results to CSV file.
 
